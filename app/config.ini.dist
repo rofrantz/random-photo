@@ -1,0 +1,3 @@
+[parameters]
+engine = Filesystem #default if not specified
+parameters[path] = /path/to/your/photos

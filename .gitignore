@@ -1,0 +1,5 @@
+.idea
+.vagrant
+/web/vendor/
+/vendor/
+/app/config.ini

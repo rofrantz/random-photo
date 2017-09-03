@@ -1,0 +1,13 @@
+{
+    "name": "frantz/random-photo",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": { "": "classes/" }
+    },
+
+    "require": {
+        "php": ">=7.0"
+    }
+}

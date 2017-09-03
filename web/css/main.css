@@ -1,0 +1,205 @@
+html, body {
+    background: #C99A61 url(../images/bkg.jpg);
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display:         flex;
+    flex-direction: column;
+}
+
+header, footer {
+    background: rgba(0,0,0,0.7);
+    width: 100%;
+    color: #fff;
+    text-transform: uppercase;
+    font-family: 'Permanent Marker', 'Segoe Print', cursive;
+    font-weight: normal;
+    z-index: 4;
+    position: relative;
+}
+
+h1 {
+    float: left;
+    font-size: 4vh;
+    margin: 0.5vmax;
+    position: relative;
+    display: inline-block;
+}
+
+header, footer {
+    text-align: right;
+    z-index: 6;
+}
+
+header p, footer p {
+    display: inline-block;
+    margin: 0.5vmax;
+    position: relative;
+}
+
+header p {
+    font-size: 4vh;
+    display: none;
+}
+
+footer .actions {
+    display: none;
+    float: left;
+    overflow: hidden;
+}
+
+.main {
+    flex: 1;
+}
+
+.hbox {
+    display:         flex;
+    flex-direction: row;
+}
+
+.full-size {
+    width: 100%;
+    height: 100%;
+}
+
+.photos-container {
+    position: relative;
+}
+
+.photos-container .big-photo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 5;
+}
+
+.photos-container .big-photo img {
+    height: 100%;
+    position: relative;
+}
+
+.photos-container ul.photos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    position: relative;
+}
+
+ul.photos li {
+    display: inline-block;
+    position: absolute;
+    padding: 10px 10px 5px;
+    background: #f3f2f1;
+    border: solid #f3f2f1;
+    box-shadow: -3px 0 12px #000;
+    font-family: 'Permanent Marker', 'Segoe Print', cursive;
+    /*transform-origin: 50% 50%;*/
+}
+
+ul.photos li:hover {
+    z-index: 5;
+    transition: 0.3s all ease-out;
+    transform: rotate(0deg) scale(1.25) !important;
+}
+
+ul.photos li a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 250px;
+}
+
+ul.photos li div.title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+ul.photos li a .date {
+    display: block;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    z-index: 1;
+    color: #fff;
+    /*-webkit-text-stroke: 1px #000;*/
+}
+
+ul.photos li a .tr {
+    display: block;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    z-index: 1;
+    color: #fff;
+    /*-webkit-text-stroke: 1px #000;*/
+    transform: rotate(90deg);
+}
+
+ul.photos li a .tl {
+    display: block;
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    z-index: 1;
+    color: #fff;
+    /*-webkit-text-stroke: 1px #000;*/
+}
+
+ul.photos li .image-wrapper {
+    background-color: #000;
+    opacity: 1;
+}
+
+ul.photos li img.image {
+    width: 250px;
+    display: block;
+    position: relative;
+    margin-bottom: 0.2em;
+    border: none;
+    filter: grayscale(0);
+}
+
+button.btn {
+    background: #000;
+    border: 1px solid #fff;
+    border: 1px solid rgba(255,255,255,0.5);
+    cursor: pointer;
+    color: #fff;
+    display: inline-block;
+    float: left;
+    font-family: 'Permanent Marker', 'Segoe Print', cursive;
+    margin: 0.5vmax;
+    padding: 5px 10px;
+    position: relative;
+}
+button.btn:hover { background: #621; }
+
+.slideshow-progress {
+    background-color: #ff0000;
+    height: 5px;
+    width: 0;
+}
+/* latin */
+@font-face {
+	font-family: 'Holtwood One SC';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Holtwood One SC'), local('HoltwoodOneSC'), url(http://fonts.gstatic.com/s/holtwoodonesc/v7/sToOq3cIxbfnhbEkgYNuBZi4I2Fwo6sqyzVodtQ85Ik.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+/* latin */
+@font-face {
+	font-family: 'Permanent Marker';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Permanent Marker'), local('PermanentMarker'), url(http://fonts.gstatic.com/s/permanentmarker/v5/9vYsg5VgPHKK8SXYbf3sMsW72xVeg1938eUHStY_AJ4.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}

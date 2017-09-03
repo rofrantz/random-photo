@@ -1,0 +1,16 @@
+{
+  "name": "random-photo-module",
+  "version": "0.0.1",
+  "description": "Display nicely random photos from specified source",
+  "authors": [
+    "Francisc Ungureanu"
+  ],
+  "license": "Proprietary",
+  "private": true,
+  "directory" : "web/vendor",
+  "dependencies": {
+    "jquery": "*",
+    "gsap": "*",
+    "mdi": "*"
+  }
+}
