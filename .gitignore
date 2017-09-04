@@ -3,3 +3,4 @@
 /web/vendor/
 /vendor/
 /app/config.ini
+/provisioning/ansible.retry
