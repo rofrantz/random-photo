@@ -5,9 +5,13 @@ abstract class cPhotoAbstractEngine
     /** @var string */
     protected $path;
 
+    /** @var string[] */
+    protected $excludePaths;
+
     public function __construct(array $options)
     {
-        $this->path = $options['path'];
+        $this->path = $options['include-path'];
+		$this->excludePaths = isset($options['exclude-path']) ? explode(",", $options['exclude-path']) : [];
     }
 
     /**

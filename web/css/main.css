@@ -103,9 +103,12 @@ ul.photos li {
     /*transform-origin: 50% 50%;*/
 }
 
-ul.photos li:hover {
+ul.photos li.normal {
+}
+
+ul.photos li.normal:hover {
+    transition: 0.3s all /*ease-out*/;
     z-index: 5;
-    transition: 0.3s all ease-out;
     transform: rotate(0deg) scale(1.25) !important;
 }
 

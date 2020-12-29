@@ -51,7 +51,7 @@ class CameraRaw
     public static function embeddedPreviews($filePath)
     {
         if (!self::checkFile($filePath)) {
-            throw new \InvalidArgumentException('Incorrect filepath given');
+            throw new \InvalidArgumentException('Incorrect filepath given' + $filePath);
         }
         $previewOutput = self::exec('exiv2 -pp "'.$filePath.'"');
 
@@ -63,16 +63,16 @@ class CameraRaw
      * (This will also work on raw files, but it will be exceptionally
      * slower than extracting the preview).
      *
-     * @param string $sourceFilePath the path to the original file
-     * @param int    $width          the max width
-     * @param int    $height         the max height of the image
-     * @param int    $quality        the quality of the new image (0-100)
-     * @param string $format         the format of image (jpg)
+     * @param string $source
+     * @param int $width the max width
+     * @param int $height the max height of the image
+     * @param int $quality the quality of the new image (0-100)
+     * @param string $format the format of image (jpg)
      *
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws ImagickException
      */
-    public static function generateImage(string $source, int $width, int $height, int $quality = 60, string $format = 'jpg')
+    public static function generateImage(string $source, int $width, int $height, int $quality = 100, string $format = 'jpg')
     {
         $im = new \Imagick();
         $im->readImageBlob($source);
@@ -100,11 +100,6 @@ class CameraRaw
     public static function extractPreview(string $sourceFilePath, int $previewNumber = null, int $minWidth = null, int $minHeight = null, string $targetFilePath = null)
     {
         $cleanFiles = [];
-
-        // check that the source file exists.
-        if (!self::checkFile($sourceFilePath)) {
-            throw new \InvalidArgumentException('Incorrect source filepath given '.$sourceFilePath);
-        }
 
         // fetch the all the preview images (and verify that there indeed exit previews)
         $previews = self::embeddedPreviews($sourceFilePath);

@@ -1,22 +1,13 @@
-var apiURL = window.location.href;
-var apiConfig = {
-    per_page: 5
-};
-
-var minRotation = -15;
+var minRotation = 5;
 var maxRotation = 15;
 
 var $photoList = $('.photos');
+var $displayArea = $('.main');
 var $bigPhoto = $('.big-photo');$bigPhoto.hide();
 var $moreButton = $('.more');
 var $playPauseButton = $('.play-pause');
 var $footer = $('footer');
 var $closeButton = $('header p');
-
-var webWorkerSupport = false;
-if (typeof(Worker) !== "undefined") {
-    webWorkerSupport = true;
-}
 
 var footer = function () {
     var $actionsEl = $footer.find('.actions');
@@ -34,33 +25,14 @@ var footer = function () {
     //archive
 };
 
+var rotation = function () {
+    var r = (2 * Math.floor(Math.random() * 2) - 1) * (Math.floor(Math.random() * (maxRotation - minRotation + 1)) + minRotation);
+    return r;
+};
+
 var cPhotos = function () {
 
     var maxPhotosDisplayed = 20;
-
-    var worker;
-    if (webWorkerSupport) {
-        if (typeof(worker) === 'undefined') {
-            worker = new Worker('js/photoLoader.js');
-        }
-    } else {
-        alert('no support for web workers');
-    }
-
-    var loadSinglePhoto = function(preload, photoOptions, callback) {
-        worker.onmessage = function (e) {
-            callback(e.data);
-        };
-
-        worker.postMessage({
-            'cmd': 'loadPhoto',
-            'preload': preload,
-            'ajax': {
-                url: apiURL + 'loadPhoto.php',
-                params: $.extend(photoOptions || {}, apiConfig, {per_page: 1})
-            }
-        });
-    };
 
     this.load = function(count, preload, photoOptions) {
         var dfd = $.Deferred();
@@ -68,13 +40,18 @@ var cPhotos = function () {
 
         var photos = [];
         for (var i=0; i < count; i++) {
-            loadSinglePhoto(preload, $.extend({'size': 'B'}, photoOptions || {}), function (photo) {
-                photos.push(photo);
-                dfd.notify(photo);
-                if (--loadedPhotos === 0) {
-                    dfd.resolve(photos);
+            loadSinglePhoto(preload, $.extend({'size': 'B'}, photoOptions || {}),
+                function (photo) {
+                    photos.push(photo);
+                    dfd.notify(photo);
+                    if (--loadedPhotos === 0) {
+                        dfd.resolve(photos);
+                    }
+                },
+                function (errorMessage) {
+                    dfd.reject(errorMessage);
                 }
-            });
+            );
         }
 
         return dfd.promise();
@@ -92,7 +69,28 @@ var cPhotos = function () {
     });
 
     var render = function (photo) {
-        var $nextImg = $('<li/>').css(position.random());
+        var pos = position.randomPos();
+        var $nextImg = $('<li/>').toggleClass('normal').css(pos);
+        var colors = ["#f3f2f1", "#222"];
+        var color = Math.floor(1 * Math.random());
+        var styles = [
+            {
+                'backgroundColor': colors[color],
+                'color': colors[1-color],
+                'border': "25px solid transparent",
+                'boxShadow': 'none',
+                'borderImage':"url(/images/frame2.jpg) 100 round"
+            },
+            {
+                'backgroundColor': colors[color],
+                'color': colors[1-color],
+                'border': "2px solid " + colors[1-color]
+            }        
+        ];
+        var style = Math.floor((styles.length) * Math.random());
+        console.log(style);
+        $nextImg.css(styles[style]);
+        $nextImg.attr('rotation', pos.rotation);
 
         var html = '<a href="#" target="_blank">';
         //html += '<div class="tl"><svg width="100" height="100"><use xlink:href="#corner" transform="scale(0.2)" fill="#fff" stroke="#fff" stroke-width="5px"/></svg></div>';
@@ -113,12 +111,21 @@ var cPhotos = function () {
             .html(html)
             .appendTo($photoList)
             .click(function (e) {
+                $nextImg.toggleClass('normal');
                 e.preventDefault();
                 slideshow.pause();
 
-                var tl = new TimelineLite({ paused: true, onReverseComplete: function () {
-                    $nextImg.css('zIndex', 0);
-                }});
+                var tl = new TimelineLite({ paused: true,
+                    onReverseComplete: function () {
+                        $nextImg
+                            .css('zIndex', 0)
+                            .toggleClass('normal');
+                    }
+                });
+                tl.from($nextImg, 0.5, {
+                    rotation: 0,
+                    scale: 1.25
+                }, 'animate-other-photos');
 
                 loadSinglePhoto(0, { photo_id: photo.id, useCache: false, size: 'original' }, function (photo) {
                     var $img = $bigPhoto.children('img');
@@ -141,7 +148,7 @@ var cPhotos = function () {
                 //footer.show();
                 console.log(photo);
                 var newScale = 1;
-                tl.to($nextImg, 3, {
+                tl.to($nextImg, 2, {
                     rotation: 0,
                     top: '50%',//$nextImg.outerHeight() * (newScale-1) / 2 + $('header').height(),
                     left: '50%', // $nextImg.outerWidth() * (newScale-1) / 2 ,
@@ -168,12 +175,30 @@ var cPhotos = function () {
             .progress(function (photo) {
                 var $nextImg = render(photo);
                 $nextImg.ready(function () {
-                    tl.to($nextImg, 1,
-                        $.extend(position.near($nextImg), {
+                    var i = 0, initialRotation = $($nextImg[0]).attr('rotation');
+                    var rotation = -initialRotation;
+                    while ((i++ < 5) && ((Math.abs(rotation) + Math.abs(initialRotation) < 20))) {
+                        rotation = rotation + 5 * (initialRotation < 0 ? 1 : -1);
+                    }
+
+                    var finalPosition = position.nearPos($nextImg);
+					var img = $nextImg.find('img');
+					tl.to($nextImg, 1,
+						$.extend(finalPosition, {
                             opacity: 1,
-                            rotation: Math.floor(Math.random() * (maxRotation - minRotation + 1)) + minRotation,
+                            rotation: rotation,
                             ease: Power1.easeOut
-                        }));
+                        })
+					);
+					var area = img.width()*img.height();
+					var x = "";
+					if (area < 50000) {
+						var newWidth = 350;
+						$nextImg.find('a').width(newWidth);
+						$nextImg.find('img').width(newWidth);
+						x="a";
+					}
+					//$nextImg.find('.title').html(x + " => " + img.width() + " x " + img.height() + " = " + area);
                     //tl.fromTo($nextImg.find('img'), 1, {autoAlpha: 0}, {autoAlpha: 1});
                 });
             })
@@ -181,6 +206,10 @@ var cPhotos = function () {
                 tl.play();
                 pruneOldPhotos();
                 dfd.resolve();
+            })
+            .catch(function (errorMessage) {
+                tl.play();
+                dfd.reject(errorMessage);
             });
 
         return dfd.promise();
@@ -189,9 +218,9 @@ var cPhotos = function () {
     var pruneOldPhotos = function() {
         var $allImages = $photoList.find('li');
         if ($allImages.length >= maxPhotosDisplayed) {
-            var $photosToBeRemoved = $photoList.find('li').slice(0, apiConfig.per_page).remove();return;
+            var $photosToBeRemoved = $photoList.find('li').slice(0, apiConfig.per_page);//.remove();return;
             var tl = new TimelineLite();
-            tl.staggerTo($photosToBeRemoved, 1, {autoAlpha: 0}, 0.7, 0, function () {
+            tl.staggerTo($photosToBeRemoved, 2, {autoAlpha: 0, rotation: rotation(), scale: 0.25 }, 1.6, 0, function () {
                 $photosToBeRemoved.remove();
             });
         }
@@ -228,28 +257,39 @@ var cSlideshow = function ($el) {
 slideshow = new cSlideshow($('.slideshow-progress'));
 
 var position = {
-    random: function () {
+    randomPos: function () {
+        var rot = rotation();
         return {
-            top: 		100 + Math.floor(Math.random() * $photoList.height()) - 350 + 'px',
-            left: 		100 + (Math.floor(Math.random() * $photoList.width())) - 350 + 'px',
-            transform: 	'rotate(' + (Math.floor(Math.random() * (maxRotation - minRotation + 1)) + minRotation) + 'deg)'
+            'top': 		 100 + Math.floor(Math.random() * $displayArea.height()) - 350 + 'px',
+            'left': 	 100 + (Math.floor(Math.random() * $displayArea.width())) - 350 + 'px',
+            'rotation':  rot,
+            'transform': 'rotate(' + rot + 'deg)'
         }
     },
 
-    near: function ($el) {
+    nearPos: function ($el) {
         var final = $($el).position();
-        var r = 50 + 400 * Math.random();
-        var angle = Math.random() * Math.PI / 2;
+        var i = 0;
+        do {
+            var r = 50 + 400 * Math.random();
+            var angle = Math.random() * Math.PI / 2;
 
-        final.left = Math.max(50, Math.min(
-            $photoList.width() - $($el).width() - 100,
-            Math.round(final.left) + Math.round(r * Math.cos(angle))
-        )) + 'px';
+            var left = Math.max(50, Math.min(
+                $displayArea.width() - $($el).width() - 100,
+                Math.round(final.left) + Math.round(r * Math.cos(angle))
+            ));
 
-        final.top = Math.max(20, Math.min(
-            $photoList.height() - $($el).height() - 20,
-            Math.round(final.top) + Math.round(r * Math.sin(angle))
-        )) + 'px';
+            var top = Math.max(20, Math.min(
+                $displayArea.height() - $($el).height() - 20,
+                Math.round(final.top) + Math.round(r * Math.sin(angle))
+            ));
+            var diffLeft = Math.round(Math.abs(left-final.left));
+            var diffTop = Math.round(Math.abs(top-final.top));
+        } while (++i < 5 && ((diffLeft < 75 && diffTop < 75) || (diffLeft + diffTop < 150)));
+
+        //console.log(i, diffLeft, diffTop, $el[0]);
+        final.left = left + 'px';
+        final.top = top + 'px';
         //final.transform = 'rotate(' + (Math.floor(Math.random() * (maxRotation - minRotation + 1)) + minRotation) + 'deg)';
 
         return final;

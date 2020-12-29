@@ -1,4 +1,5 @@
 <?php
+ini_set('display_errors', 1);
 
 class cPhotoFilesystem  extends cPhotoAbstractEngine
 {
@@ -6,13 +7,33 @@ class cPhotoFilesystem  extends cPhotoAbstractEngine
     {
         $m = new Cache();
 
-        $cacheKey = sys_get_temp_dir() . DIRECTORY_SEPARATOR .  'photo_' . md5($this->path) . '.log';
+        $cacheKey = sys_get_temp_dir() . DIRECTORY_SEPARATOR .  'xphoto_' . md5($this->path) . '.log';
         $arr = $m->get($cacheKey);
         if ($arr === false) {
             $Directory = new RecursiveDirectoryIterator($this->path, \FilesystemIterator::FOLLOW_SYMLINKS);
-            $Iterator = new RecursiveIteratorIterator($Directory);
-            $filter = new RegexIterator($Iterator, '/^.+\.(nef|jpg)$/i', RecursiveRegexIterator::GET_MATCH);
-            $arr = array_keys(iterator_to_array($filter));
+            /**
+			 * @param SplFileInfo $file
+			 * @param mixed $key
+			 * @param RecursiveCallbackFilterIterator $iterator
+			 * @return bool True if you need to recurse or if the item is acceptable
+			 */
+			$exclude = $this->excludePaths;
+			$filterDirs = function ($file, $key, $iterator) use ($exclude) {
+				if ($iterator->hasChildren() && !in_array($file->getFilename(), $exclude)) {
+					return true;
+				}
+				return $file->isFile();
+			};
+			$DirIterator = new RecursiveCallbackFilterIterator($Directory, $filterDirs);
+			
+			//$DirIterator = new RecursiveIteratorIterator($Directory);
+			$DirIterator = new RecursiveIteratorIterator($DirIterator);
+			
+            $filterFiles = new RegexIterator($DirIterator, '/^.[^@]+\.(nef|jpg)$/i', RecursiveRegexIterator::GET_MATCH);
+            $arr = array_keys(iterator_to_array($filterFiles));
+			
+			//var_dump($arr);die();
+			
             $m->set($cacheKey, $arr, 60 * 60 * 24);
         }
 

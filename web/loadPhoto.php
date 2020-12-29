@@ -7,6 +7,7 @@ $photoId = getParam('photo_id');
 
 $config = parse_ini_file(__DIR__ . '/../app/config.ini');
 $photoEngine = cPhotoFactory::create($config['engine'] ?: 'Filesystem' , $config['parameters']);
+//print_r($config);die();
 
 $photos = isset($photoId) && $photoId >= 0
     ? [$photoEngine->transform($photoId, $photoSize)]
@@ -17,11 +18,15 @@ if (getParam("image") == 1) {
     $content = $photos[0]->getContent();
 } else {
     $returnPhotos = [];
+    $im = new \Imagick();
     foreach ($photos as $photo) {
+        $im->readImageBlob($photo->getContent());
         $photoInfo = [
             "src" => "data:image/jpeg;base64, " . base64_encode($photo->getContent()),
             "name" => $photo->getName(),
             "path" => $photo->getPath(),
+            "width" => $im->getImageWidth(),
+            "height" => $im->getImageHeight(),
             "id" => $photo->getId()
         ];
 

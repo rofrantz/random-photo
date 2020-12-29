@@ -13,18 +13,30 @@ self.addEventListener('message', function(e) {
     switch (data.cmd) {
         case 'loadPhoto':
             if (buffer.length && useCache) {
-                postMessage(buffer.pop());
-            } else {
-                ajax(data.ajax.url, data.ajax.params, function (photos) {
+                var message = buffer.pop();
+                if (typeof(message) == "object") {
+                    postMessage(message);
+                    return;
+                } else {
+                    console.log(buffer);
+                    throw "HERE2: " + message + ", " + buffer.length;
+                }
+            }
+
+            ajax(data.ajax.url, data.ajax.params, function (photos) {
+                if (typeof(photos) == "object") {
                     for (var i = 0, max = photos.length; i < max; i++) {
+                        var content = photos[i];
                         if (data.preload) {
                             buffer.push(photos[i]);
                         }
 
-                        self.postMessage(photos[i]);
+                        self.postMessage(content);
                     }
-                });
-            }
+                } else {
+                    self.postMessage(photos);
+                }
+            });
 
             break;
     }
