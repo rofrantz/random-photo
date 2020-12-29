@@ -1,6 +1,8 @@
 .idea
+.composer.lock
 .vagrant
 /web/vendor/
 /vendor/
 /app/config.ini
 /provisioning/ansible.retry
+/node_modules/
